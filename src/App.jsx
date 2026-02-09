@@ -11,9 +11,10 @@ function App() {
 
   const fetchWeather = async (city) => {
     try {
-      const response = await fetch(
-        `https://weather.visualcrossing.com/VisualCrossingWebServices/rest/services/timeline/${city}?unitGroup=metric&key=${API_KEY}&contentType=json`
-      );
+      // This URL fetches a 2-day window: yesterday and today
+const response = await fetch(
+  `https://weather.visualcrossing.com/VisualCrossingWebServices/rest/services/timeline/${city}/yesterday/today?unitGroup=metric&key=${API_KEY}&contentType=json`
+);
       if (!response.ok) throw new Error('Location not found');
       const data = await response.json();
       setWeather(data);
@@ -33,7 +34,7 @@ function App() {
         <input 
           value={location} 
           onChange={(e) => setLocation(e.target.value)} 
-          placeholder="Enter City..." 
+          placeholder="Enter City...e.g., New York" 
         />
         <button onClick={() => fetchWeather(location)}>Search</button>
         {/* Requirement: Refresh the outlook */}
@@ -42,29 +43,32 @@ function App() {
 
       {error && <p className="error">{error}</p>}
 
-      {weather && (
-        <div className="content">
-          {/* Requirement: Current weather details */}
-          <div className="current">
-            <h2>{weather.resolvedAddress}</h2>
-            <p>Condition: {weather.currentConditions.conditions}</p>
-            <p>Temp: {weather.currentConditions.temp}°C</p>
-            <p>Wind: {weather.currentConditions.windspeed} km/h</p>
-            <p>Rain Probability: {weather.currentConditions.precipprob}%</p>
-          </div>
-
-          {/* Requirement: Future 24 hour period */}
-          <h3>Next 24 Hours</h3>
-          <div className="hourly-wrap">
-            {weather.days[0].hours.map((hour, i) => (
-              <div key={i} className="hour-card">
-                <p>{hour.datetime.slice(0, 5)}</p>
-                <p>{hour.temp}°C</p>
-              </div>
-            ))}
-          </div>
+{weather && (
+  <div className="forecast-container">
+    {/* Section 1: Previous 24 Hours */}
+    <h3>Previous 24 Hours (Yesterday)</h3>
+    <div className="hourly-scroll">
+      {weather.days[0].hours.map((hour, i) => (
+        <div key={i} className="hour-card">
+          <p>{hour.datetime.slice(0, 5)}</p>
+          <p>{hour.temp}°C</p>
         </div>
-      )}
+      ))}
+    </div>
+
+    {/* Section 2: Future 24 Hours (Today) */}
+    <h3>Future 24 Hours (Today)</h3>
+    <div className="hourly-scroll">
+      {weather.days[1].hours.map((hour, i) => (
+        <div key={i} className="hour-card">
+          <p>{hour.datetime.slice(0, 5)}</p>
+          <p>{hour.temp}°C</p>
+        </div>
+      ))}
+    </div>
+</div>
+)}
+
     </div>
   );
 }
